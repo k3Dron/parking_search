@@ -2,7 +2,7 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 #from functions import get_roi, check_for_vehicles
-
+print(cv2.__version__)
 config_file = 'ssd_mobilenet_v3_large_coco_2020_01_14.pbtxt'
 frozen_model = 'frozen_inference_graph.pb'
 model = cv2.dnn_DetectionModel(frozen_model, config_file)
@@ -47,10 +47,9 @@ def check_for_vehicles(spot_bgr, frame):
             return True
     return False   
 
-mask = './mask_1920_1080.png'
-mask1 = cv2.imread(mask, cv2.IMREAD_GRAYSCALE)
-ret, thresh = cv2.threshold(mask1, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
-connected_components = cv2.connectedComponentsWithStats(thresh, 4, cv2.CV_32S)
+mask = './mask_crop.png'
+mask1 = cv2.imread(mask, 0)
+connected_components = cv2.connectedComponentsWithStats(mask1, 4, cv2.CV_32S)
 slots = get_roi(connected_components)
 cap = cv2.VideoCapture(0)
 ret = True
