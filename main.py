@@ -21,7 +21,6 @@ object_to_be_detected = [2, 3, 4, 5, 6, 7, 8]
 objects_observable = np.array(object_to_be_detected)
 
 def get_roi(connected_components):
-    print("mid test")
     (totalLabels, label_ids, values, centroid) = connected_components
     slots = []
     coef = 1
@@ -34,7 +33,7 @@ def get_roi(connected_components):
         slots.append([x1, y1, w, h])
     return slots
 
-def check_for_vehicles(spot_bgr, frame):
+def check_for_vehicles(spot_bgr, frame, arr):
     ClassIndex, confidence, bbox = model.detect(spot_bgr, confThreshold = 0.55)
     if(len(ClassIndex) != 0) :
             for ClassInd, conf, boxes in zip(ClassIndex.flatten(), confidence.flatten(), bbox):
@@ -44,8 +43,10 @@ def check_for_vehicles(spot_bgr, frame):
     cv2.imshow('Object Detection', frame)     
     for val in objects_observable:
         if val in ClassIndex:
-            return True
-    return False   
+            arr.append(1)
+            return arr
+    arr.append(0)    
+    return arr   
 
 mask = './mask_crop.png'
 mask1 = cv2.imread(mask, 0)
@@ -55,16 +56,18 @@ cap = cv2.VideoCapture(0)
 ret = True
 while ret:
     ret, frame = cap.read()
+    arr =[]
     for slot in slots:
         x1,y1,w,h = slot
         slot_crop = frame[y1:y1+h, x1:x1+w, :]
-        slot_status = check_for_vehicles(slot_crop, frame)
-        if slot_status:
-            frame = cv2.rectangle(frame, (x1, y1), (x1 + w, y1 + h), (0, 255, 0), 2)
-        else:
-            frame = cv2.rectangle(frame, (x1, y1), (x1 + w, y1 + h), (0, 0, 255), 2)
+        slot_status = check_for_vehicles(slot_crop, frame, arr)
+        # if slot_status:
+        #     frame = cv2.rectangle(frame, (x1, y1), (x1 + w, y1 + h), (0, 0, 255), 2)
+        # else:
+        #     frame = cv2.rectangle(frame, (x1, y1), (x1 + w, y1 + h), (0, 255, 0), 2)
     cv2.imshow('Object Detection', frame) 
+    print(arr) 
     if(cv2.waitKey(2) & 0xFF) == ord('q'):
-        break
+        break   
 cap.release()
 cv2.destroyAllWindows()               
